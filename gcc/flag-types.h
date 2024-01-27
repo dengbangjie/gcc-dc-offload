@@ -447,6 +447,15 @@ enum gfc_convert
 };
 
 
+enum gfc_fdo_concurrent
+{
+  GFC_FLAG_DO_CONCURRENT_SERIAL = 0,
+  GFC_FLAG_DO_CONCURRENT_PARALLEL = 1,
+  GFC_FLAG_DO_CONCURRENT_OPENMP = 2,
+  GFC_FLAG_DO_CONCURRENT_OPENMP_TARGET = 3,
+  GFC_FLAG_DO_CONCURRENT_OPENACC = 4,
+};
+
 /* Inline String Operations functions.  */
 enum ilsop_fn
 {

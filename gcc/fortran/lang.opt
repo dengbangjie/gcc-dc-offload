@@ -377,6 +377,29 @@ d
 Fortran Joined
 ; Documented in common.opt
 
+fdo-concurrent=
+Fortran RejectNegative Joined Enum(gfc_fdo_concurrent) EnumSet Var(flag_do_concurrent) Init(GFC_FLAG_DO_CONCURRENT_SERIAL)
+Fortran do conccurent backend
+
+Enum
+Name(gfc_fdo_concurrent) Type(enum gfc_fdo_concurrent) UnknownError(Unrecognized option to do concurrent option: %qs)
+
+EnumValue
+Enum(gfc_fdo_concurrent) String(serial) Value(GFC_FLAG_DO_CONCURRENT_SERIAL) Set(1)
+
+EnumValue
+Enum(gfc_fdo_concurrent) String(parallel) Value(GFC_FLAG_DO_CONCURRENT_PARALLEL) Set(2)
+
+EnumValue
+Enum(gfc_fdo_concurrent) String(openmp) Value(GFC_FLAG_DO_CONCURRENT_OPENMP) Set(3)
+
+EnumValue
+Enum(gfc_fdo_concurrent) String(openmp-target) Value(GFC_FLAG_DO_CONCURRENT_OPENMP_TARGET) Set(4)
+
+EnumValue
+Enum(gfc_fdo_concurrent) String(openacc) Value(GFC_FLAG_DO_CONCURRENT_OPENACC) Set(5)
+
+
 fallow-argument-mismatch
 Fortran Var(flag_allow_argument_mismatch) LangEnabledBy(Fortran,std=legacy)
 Accept argument mismatches in procedure calls.
