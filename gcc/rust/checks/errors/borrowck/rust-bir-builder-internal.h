@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -261,12 +261,12 @@ protected: // CFG helpers
 
 protected: // HIR resolution helpers
   template <typename T>
-  [[nodiscard]] TyTy::BaseType *lookup_type (T &hir_node) const
+  WARN_UNUSED_RESULT TyTy::BaseType *lookup_type (T &hir_node) const
   {
     return lookup_type (hir_node.get_mappings ().get_hirid ());
   }
 
-  [[nodiscard]] TyTy::BaseType *lookup_type (HirId hirid) const
+  WARN_UNUSED_RESULT TyTy::BaseType *lookup_type (HirId hirid) const
   {
     TyTy::BaseType *type = nullptr;
     bool ok = ctx.tyctx.lookup_type (hirid, &type);

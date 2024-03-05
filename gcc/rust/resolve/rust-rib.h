@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -26,6 +26,31 @@
 
 namespace Rust {
 namespace Resolver2_0 {
+
+/**
+
+pub enum Namespace {
+   /// The type namespace includes `struct`s, `enum`s, `union`s, `trait`s, and
+`mod`s
+   /// (and, by extension, crates).
+   ///
+   /// Note that the type namespace includes other items; this is not an
+   /// exhaustive list.
+   TypeNS,
+   /// The value namespace includes `fn`s, `const`s, `static`s, and local
+variables (including function arguments). ValueNS,
+   /// The macro namespace includes `macro_rules!` macros, declarative `macro`s,
+   /// procedural macros, attribute macros, `derive` macros, and non-macro
+attributes
+   /// like `#[inline]` and `#[rustfmt::skip]`.
+   MacroNS,
+}
+
+*/
+
+// FIXME: There's no `labels` namespace, not sure if we need one or how to keep
+// one
+// FIXME: And where are things like loop labels kept?
 
 /**
  * All namespaces that Rust's name resolution needs to handle

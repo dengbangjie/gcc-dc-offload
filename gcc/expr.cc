@@ -6061,6 +6061,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
  
+      rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
 	  machine_mode address_mode;
@@ -6070,9 +6071,22 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    {
 	      /* We can get constant negative offsets into arrays with broken
 		 user code.  Translate this to a trap instead of ICEing.  */
-	      gcc_assert (TREE_CODE (offset) == INTEGER_CST);
-	      expand_builtin_trap ();
-	      to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+	      if (TREE_CODE (offset) == INTEGER_CST)
+		{
+		  expand_builtin_trap ();
+		  to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+		}
+	      /* Else spill for variable offset to the destination.  We expect
+		 to run into this only for hard registers.  */
+	      else
+		{
+		  gcc_assert (VAR_P (tem) && DECL_HARD_REGISTER (tem));
+		  stemp = assign_stack_temp (GET_MODE (to_rtx),
+					     GET_MODE_SIZE (GET_MODE (to_rtx)));
+		  emit_move_insn (stemp, to_rtx);
+		  old_to_rtx = to_rtx;
+		  to_rtx = stemp;
+		}
 	    }
 
 	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
@@ -6305,6 +6319,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
+	  /* Move the temporary storage back to the non-MEM_P.  */
+	  if (stemp)
+	    emit_move_insn (old_to_rtx, stemp);
 	}
 
       if (result)
@@ -7862,8 +7879,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    auto nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
 	      tmp = expand_binop (mode, and_optab, tmp,
-				  GEN_INT ((1 << nunits) - 1), target,
-				  true, OPTAB_WIDEN);
+				  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+				  target, true, OPTAB_WIDEN);
 	    if (tmp != target)
 	      emit_move_insn (target, tmp);
 	    break;
@@ -10242,12 +10259,12 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  &algorithm, &variant, cost)
 		  : cost < mul_cost (speed, mode))
 		{
-		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
-						op1, target)
-				  : expand_and (mode, op0,
-						negate_rtx (mode, op1),
-						target);
-		  return REDUCE_BIT_FIELD (target);
+		  temp = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+					      op1, target)
+				: expand_and (mode, op0,
+					      negate_rtx (mode, op1),
+					      target);
+		  return REDUCE_BIT_FIELD (temp);
 		}
 	    }
 	}
@@ -12428,7 +12445,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    }
 	}
       /* If both types are integral, convert from one mode to the other.  */
-      else if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (treeop0)))
+      else if (INTEGRAL_TYPE_P (type)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (treeop0))
+	       && mode != BLKmode
+	       && GET_MODE (op0) != BLKmode)
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
@@ -13485,6 +13505,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   rtx op0, op1;
   rtx subtarget = target;
   location_t loc = ops->location;
+  unsigned HOST_WIDE_INT nunits;
 
   arg0 = ops->op0;
   arg1 = ops->op1;
@@ -13676,6 +13697,22 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
     subtarget = 0;
 
   expand_operands (arg0, arg1, subtarget, &op0, &op1, EXPAND_NORMAL);
+
+  /* For boolean vectors with less than mode precision
+     make sure to fill padding with consistent values.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && SCALAR_INT_MODE_P (operand_mode)
+      && TYPE_VECTOR_SUBPARTS (type).is_constant (&nunits)
+      && maybe_ne (GET_MODE_PRECISION (operand_mode), nunits))
+    {
+      gcc_assert (code == EQ || code == NE);
+      op0 = expand_binop (mode, and_optab, op0,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
+      op1 = expand_binop (mode, and_optab, op1,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
+    }
 
   if (target == 0)
     target = gen_reg_rtx (mode);

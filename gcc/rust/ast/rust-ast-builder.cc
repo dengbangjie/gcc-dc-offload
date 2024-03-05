@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -46,7 +46,7 @@ AstBuilder::tuple_idx (std::string receiver, int idx)
 FunctionQualifiers
 AstBuilder::fn_qualifiers ()
 {
-  return FunctionQualifiers (loc, AsyncConstStatus::NONE, false);
+  return FunctionQualifiers (loc, Async::No, Const::No, Unsafety::Normal);
 }
 
 PathExprSegment

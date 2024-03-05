@@ -5256,7 +5256,7 @@ keep_unused_object_arg (tree result, tree obj, tree fn)
 {
   if (result == NULL_TREE
       || result == error_mark_node
-      || TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+      || DECL_OBJECT_MEMBER_FUNCTION_P (fn)
       || !TREE_SIDE_EFFECTS (obj))
     return result;
 
@@ -14033,11 +14033,7 @@ std_pair_ref_ref_p (tree t)
   return true;
 }
 
-/* Return true if a class CTYPE is either std::reference_wrapper or
-   std::ref_view, or a reference wrapper class.  We consider a class
-   a reference wrapper class if it has a reference member.  We no
-   longer check that it has a constructor taking the same reference type
-   since that approach still generated too many false positives.  */
+/* Return true if a class T has a reference member.  */
 
 static bool
 class_has_reference_member_p (tree t)
@@ -14061,11 +14057,40 @@ class_has_reference_member_p_r (tree binfo, void *)
 	  ? integer_one_node : NULL_TREE);
 }
 
+
+/* Return true if T (either a class or a function) has been marked as
+   not-dangling.  */
+
+static bool
+no_dangling_p (tree t)
+{
+  t = lookup_attribute ("no_dangling", TYPE_ATTRIBUTES (t));
+  if (!t)
+    return false;
+
+  t = TREE_VALUE (t);
+  if (!t)
+    return true;
+
+  t = build_converted_constant_bool_expr (TREE_VALUE (t), tf_warning_or_error);
+  t = cxx_constant_value (t);
+  return t == boolean_true_node;
+}
+
+/* Return true if a class CTYPE is either std::reference_wrapper or
+   std::ref_view, or a reference wrapper class.  We consider a class
+   a reference wrapper class if it has a reference member.  We no
+   longer check that it has a constructor taking the same reference type
+   since that approach still generated too many false positives.  */
+
 static bool
 reference_like_class_p (tree ctype)
 {
   if (!CLASS_TYPE_P (ctype))
     return false;
+
+  if (no_dangling_p (ctype))
+    return true;
 
   /* Also accept a std::pair<const T&, const T&>.  */
   if (std_pair_ref_ref_p (ctype))
@@ -14081,6 +14106,22 @@ reference_like_class_p (tree ctype)
 	      || id_equal (name, "ref_view")))
 	return true;
     }
+
+  /* Avoid warning if CTYPE looks like std::span: it has a T* member and
+     a trivial destructor.  For example,
+
+      template<typename T>
+      struct Span {
+	T* data_;
+	std::size len_;
+      };
+
+     is considered std::span-like.  */
+  if (NON_UNION_CLASS_TYPE_P (ctype) && TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
+    for (tree field = next_aggregate_field (TYPE_FIELDS (ctype));
+	 field; field = next_aggregate_field (DECL_CHAIN (field)))
+      if (TYPE_PTR_P (TREE_TYPE (field)))
+	return true;
 
   /* Some classes, such as std::tuple, have the reference member in its
      (non-direct) base class.  */
@@ -14157,7 +14198,8 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	       but probably not to one of its arguments.  */
 	    || (DECL_OBJECT_MEMBER_FUNCTION_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
-		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
+		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF))
+	    || no_dangling_p (TREE_TYPE (fndecl)))
 	  return NULL_TREE;
 
 	tree rettype = TREE_TYPE (TREE_TYPE (fndecl));
@@ -14533,6 +14575,30 @@ maybe_show_nonconverting_candidate (tree to, tree from, tree arg, int flags)
 	  && DECL_NONCONVERTING_P (c->cand->fn))
 	inform (DECL_SOURCE_LOCATION (c->cand->fn), "explicit conversion "
 		"function was not considered");
+}
+
+/* We're converting EXPR to TYPE.  If that conversion involves a conversion
+   function and we're binding EXPR to a reference parameter of that function,
+   return true.  */
+
+bool
+conv_binds_to_reference_parm_p (tree type, tree expr)
+{
+  conversion_obstack_sentinel cos;
+  conversion *c = implicit_conversion (type, TREE_TYPE (expr), expr,
+				       /*c_cast_p=*/false, LOOKUP_NORMAL,
+				       tf_none);
+  if (c && !c->bad_p && c->user_conv_p)
+    for (; c; c = next_conversion (c))
+      if (c->kind == ck_user)
+	for (z_candidate *cand = c->cand; cand; cand = cand->next)
+	  if (cand->viable == 1)
+	    for (size_t i = 0; i < cand->num_convs; ++i)
+	      if (cand->convs[i]->kind == ck_ref_bind
+		  && conv_get_original_expr (cand->convs[i]) == expr)
+		return true;
+
+  return false;
 }
 
 #include "gt-cp-call.h"

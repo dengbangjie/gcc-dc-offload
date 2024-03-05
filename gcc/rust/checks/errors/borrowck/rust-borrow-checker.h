@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -30,7 +30,8 @@ class BorrowChecker
 
 public:
   explicit BorrowChecker (bool enable_dump_bir)
-    : enable_dump_bir (enable_dump_bir){};
+    : enable_dump_bir (enable_dump_bir)
+  {}
 
   /** Perform borrow-checking using polonius on an entire crate */
   void go (HIR::Crate &crate);
