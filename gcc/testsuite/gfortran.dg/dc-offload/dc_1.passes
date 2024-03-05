@@ -1,0 +1,49 @@
+dc_1.f90:31:31:
+
+   31 |             y(i) = x(i) * x(i)
+      |                               1
+internal compiler error: in gfc_walk_array_ref, at fortran/trans-array.cc:11815
+0xe60ffd gfc_walk_array_ref(gfc_ss*, gfc_expr*, gfc_ref*)
+	../../gcc/fortran/trans-array.cc:11815
+0xe60b88 gfc_walk_variable_expr
+	../../gcc/fortran/trans-array.cc:11707
+0xe61884 gfc_walk_subexpr(gfc_ss*, gfc_expr*)
+	../../gcc/fortran/trans-array.cc:12134
+0xe61920 gfc_walk_expr(gfc_expr*)
+	../../gcc/fortran/trans-array.cc:12177
+0xeb2ea0 gfc_trans_assignment_1
+	../../gcc/fortran/trans-expr.cc:12095
+0xeb4b2a gfc_trans_assignment(gfc_expr*, gfc_expr*, bool, bool, bool, bool)
+	../../gcc/fortran/trans-expr.cc:12659
+0xeb4ba3 gfc_trans_assign(gfc_code*)
+	../../gcc/fortran/trans-expr.cc:12672
+0xe3b0d1 trans_code
+	../../gcc/fortran/trans.cc:2363
+0xe3b728 gfc_trans_code(gfc_code*)
+	../../gcc/fortran/trans.cc:2718
+0xf1fd42 gfc_trans_forall_1
+	../../gcc/fortran/trans-stmt.cc:5230
+0xf2030e gfc_trans_do_concurrent(gfc_code*)
+	../../gcc/fortran/trans-stmt.cc:5382
+0xe3b337 trans_code
+	../../gcc/fortran/trans.cc:2467
+0xe3b728 gfc_trans_code(gfc_code*)
+	../../gcc/fortran/trans.cc:2718
+0xe85df7 gfc_generate_function_code(gfc_namespace*)
+	../../gcc/fortran/trans-decl.cc:7875
+0xe7e4e1 gfc_generate_contained_functions
+	../../gcc/fortran/trans-decl.cc:5990
+0xe85a41 gfc_generate_function_code(gfc_namespace*)
+	../../gcc/fortran/trans-decl.cc:7807
+0xe3b76c gfc_generate_code(gfc_namespace*)
+	../../gcc/fortran/trans.cc:2735
+0xdbb3ac translate_all_program_units
+	../../gcc/fortran/parse.cc:7073
+0xdbbcc6 gfc_parse_file()
+	../../gcc/fortran/parse.cc:7387
+0xe217e2 gfc_be_parse_file
+	../../gcc/fortran/f95-lang.cc:239
+Please submit a full bug report, with preprocessed source (by using -freport-bug).
+Please include the complete backtrace with any bug report.
+See <https://gcc.gnu.org/bugs/> for instructions.
+resolve.cc in do concurrent resolve

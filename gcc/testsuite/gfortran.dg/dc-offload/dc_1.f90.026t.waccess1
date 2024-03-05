@@ -1,0 +1,197 @@
+
+;; Function dc_mul (dc_mul.0, funcdef_no=1, decl_uid=4300, cgraph_uid=1, symbol_order=0)
+
+pointer_query counters:
+  index cache size:   0
+  index entries:      0
+  access cache size:  0
+  access entries:     0
+  hits:               0
+  misses:             0
+  failures:           0
+  max_depth:          0
+__attribute__((fn spec (". ")))
+void dc_mul ()
+{
+  integer(kind=4) count.1;
+  integer(kind=4) i.0;
+  real(kind=4) y[4];
+  real(kind=4) x[4];
+  integer(kind=4) i;
+  logical(kind=4) D.4329;
+  logical(kind=4) _1;
+  integer(kind=8) _2;
+  integer(kind=8) _3;
+  real(kind=4) _4;
+  integer(kind=8) _5;
+  integer(kind=8) _6;
+  real(kind=4) _7;
+  integer(kind=8) _8;
+  integer(kind=8) _9;
+  real(kind=4) _10;
+  integer(kind=4) i.0_11;
+  integer(kind=4) count.1_12;
+  integer(kind=4) i.0_14;
+  integer(kind=4) count.1_15;
+  logical(kind=4) _17;
+  integer(kind=4) i.0_19;
+  integer(kind=4) count.1_20;
+
+  <bb 2> :
+  i.0_14 = 1;
+  count.1_15 = 4;
+
+  <bb 3> :
+  # i.0_11 = PHI <i.0_14(2), i.0_19(4)>
+  # count.1_12 = PHI <count.1_15(2), count.1_20(4)>
+  _1 = count.1_12 <= 0;
+  _17 = _1;
+  if (_17 != 0)
+    goto <bb 5>; [INV]
+  else
+    goto <bb 4>; [INV]
+
+  <bb 4> :
+  _2 = (integer(kind=8)) i.0_11;
+  _3 = _2 + -1;
+  _4 = x[_3];
+  _5 = (integer(kind=8)) i.0_11;
+  _6 = _5 + -1;
+  _7 = x[_6];
+  _8 = (integer(kind=8)) i.0_11;
+  _9 = _8 + -1;
+  _10 = _4 * _7;
+  y[_9] = _10;
+  i.0_19 = i.0_11 + 1;
+  count.1_20 = count.1_12 + -1;
+  goto <bb 3>; [INV]
+
+  <bb 5> :
+  x ={v} {CLOBBER(eos)};
+  y ={v} {CLOBBER(eos)};
+  return;
+
+}
+
+
+
+;; Function do_mul (do_mul.1, funcdef_no=2, decl_uid=4302, cgraph_uid=3, symbol_order=2)
+
+pointer_query counters:
+  index cache size:   0
+  index entries:      0
+  access cache size:  0
+  access entries:     0
+  hits:               0
+  misses:             0
+  failures:           0
+  max_depth:          0
+__attribute__((fn spec (". ")))
+void do_mul ()
+{
+  logical(kind=4) D.4320;
+  real(kind=4) y[4];
+  real(kind=4) x[4];
+  integer(kind=4) i;
+  integer(kind=8) _1;
+  integer(kind=8) _2;
+  real(kind=4) _3;
+  integer(kind=8) _4;
+  integer(kind=8) _5;
+  real(kind=4) _6;
+  integer(kind=8) _7;
+  integer(kind=8) _8;
+  real(kind=4) _9;
+  logical(kind=4) _14;
+
+  <bb 2> :
+  i_12 = 1;
+
+  <bb 3> :
+  # i_10 = PHI <i_12(2), i_16(4)>
+  _14 = i_10 > 4;
+  if (_14 != 0)
+    goto <bb 5>; [INV]
+  else
+    goto <bb 4>; [INV]
+
+  <bb 4> :
+  _1 = (integer(kind=8)) i_10;
+  _2 = _1 + -1;
+  _3 = x[_2];
+  _4 = (integer(kind=8)) i_10;
+  _5 = _4 + -1;
+  _6 = x[_5];
+  _7 = (integer(kind=8)) i_10;
+  _8 = _7 + -1;
+  _9 = _3 * _6;
+  y[_8] = _9;
+  i_16 = i_10 + 1;
+  goto <bb 3>; [INV]
+
+  <bb 5> :
+  x ={v} {CLOBBER(eos)};
+  y ={v} {CLOBBER(eos)};
+  return;
+
+}
+
+
+
+;; Function dc_1 (MAIN__, funcdef_no=0, decl_uid=4298, cgraph_uid=2, symbol_order=1)
+
+pointer_query counters:
+  index cache size:   0
+  index entries:      0
+  access cache size:  0
+  access entries:     0
+  hits:               0
+  misses:             0
+  failures:           0
+  max_depth:          0
+__attribute__((fn spec (". ")))
+void dc_1 ()
+{
+  struct FRAME.dc_1 FRAME.3;
+
+  <bb 2> :
+  FRAME.3.FRAME_BASE.PARENT = 0B;
+  do_mul (); [static-chain: &FRAME.3]
+  dc_mul (); [static-chain: &FRAME.3]
+  return;
+
+}
+
+
+
+;; Function main (main, funcdef_no=3, decl_uid=4321, cgraph_uid=4, symbol_order=3)
+
+pointer_query counters:
+  index cache size:   0
+  index entries:      0
+  access cache size:  0
+  access entries:     0
+  hits:               0
+  misses:             0
+  failures:           0
+  max_depth:          0
+__attribute__((externally_visible))
+integer(kind=4) main (integer(kind=4) argc, character(kind=1) * * argv)
+{
+  static integer(kind=4) options.2[7] = {10308, 16383, 0, 1, 1, 0, 31};
+  integer(kind=4) D.4335;
+  integer(kind=4) _7;
+
+  <bb 2> :
+  _gfortran_set_args (argc_2(D), argv_3(D));
+  _gfortran_set_options (7, &options.2[0]);
+  dc_1 ();
+  _7 = 0;
+
+  <bb 3> :
+<L0>:
+  return _7;
+
+}
+
+

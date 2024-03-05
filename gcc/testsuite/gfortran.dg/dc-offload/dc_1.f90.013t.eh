@@ -1,0 +1,111 @@
+
+;; Function dc_1 (MAIN__, funcdef_no=0, decl_uid=4298, cgraph_uid=2, symbol_order=1)
+
+__attribute__((fn spec (". ")))
+void dc_1 ()
+{
+  struct FRAME.dc_1 FRAME.3;
+
+  FRAME.3.FRAME_BASE.PARENT = 0B;
+  do_mul (); [static-chain: &FRAME.3]
+  dc_mul (); [static-chain: &FRAME.3]
+  return;
+}
+
+
+
+;; Function do_mul (do_mul.1, funcdef_no=2, decl_uid=4302, cgraph_uid=3, symbol_order=2)
+
+__attribute__((fn spec (". ")))
+void do_mul ()
+{
+  logical(kind=4) D.4320;
+  real(kind=4) y[4];
+  real(kind=4) x[4];
+  integer(kind=4) i;
+
+  i = 1;
+  <D.4326>:
+  D.4320 = i > 4;
+  if (D.4320 != 0) goto L.4; else goto <D.4327>;
+  <D.4327>:
+  _1 = (integer(kind=8)) i;
+  _2 = _1 + -1;
+  _3 = x[_2];
+  _4 = (integer(kind=8)) i;
+  _5 = _4 + -1;
+  _6 = x[_5];
+  _7 = (integer(kind=8)) i;
+  _8 = _7 + -1;
+  _9 = _3 * _6;
+  y[_8] = _9;
+  L.3:
+  i = i + 1;
+  goto <D.4326>;
+  L.4:
+  x = {CLOBBER(eos)};
+  y = {CLOBBER(eos)};
+  return;
+}
+
+
+
+;; Function dc_mul (dc_mul.0, funcdef_no=1, decl_uid=4300, cgraph_uid=1, symbol_order=0)
+
+__attribute__((fn spec (". ")))
+void dc_mul ()
+{
+  integer(kind=4) count.1;
+  integer(kind=4) i.0;
+  real(kind=4) y[4];
+  real(kind=4) x[4];
+  integer(kind=4) i;
+  logical(kind=4) D.4329;
+
+  i.0 = 1;
+  count.1 = 4;
+  <D.4328>:
+  _1 = count.1 <= 0;
+  D.4329 = .ANNOTATE (_1, 0, 0);
+  if (D.4329 != 0) goto L.2; else goto <D.4330>;
+  <D.4330>:
+  _2 = (integer(kind=8)) i.0;
+  _3 = _2 + -1;
+  _4 = x[_3];
+  _5 = (integer(kind=8)) i.0;
+  _6 = _5 + -1;
+  _7 = x[_6];
+  _8 = (integer(kind=8)) i.0;
+  _9 = _8 + -1;
+  _10 = _4 * _7;
+  y[_9] = _10;
+  L.1:
+  i.0 = i.0 + 1;
+  count.1 = count.1 + -1;
+  goto <D.4328>;
+  L.2:
+  x = {CLOBBER(eos)};
+  y = {CLOBBER(eos)};
+  return;
+}
+
+
+
+;; Function main (main, funcdef_no=3, decl_uid=4321, cgraph_uid=4, symbol_order=3)
+
+__attribute__((externally_visible))
+integer(kind=4) main (integer(kind=4) argc, character(kind=1) * * argv)
+{
+  static integer(kind=4) options.2[7] = {10308, 16383, 0, 1, 1, 0, 31};
+  integer(kind=4) D.4335;
+
+  _gfortran_set_args (argc, argv);
+  _gfortran_set_options (7, &options.2[0]);
+  dc_1 ();
+  D.4335 = 0;
+  goto <D.4336>;
+  <D.4336>:
+  return D.4335;
+}
+
+

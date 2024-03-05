@@ -2837,6 +2837,11 @@ typedef struct
   bool ivdep;
   bool vector;
   bool novector;
+  bool serial;
+  bool parallel;
+  bool openmp;
+  bool openmp_target;
+  bool openacc;
 }
 gfc_loop_annot;
 

@@ -5018,6 +5018,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   stmtblock_t post;
   stmtblock_t block;
   stmtblock_t body;
+  stmtblock_t dcbody;
   tree *var;
   tree *start;
   tree *end;

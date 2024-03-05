@@ -10846,6 +10846,11 @@ gfc_resolve_where_code_in_forall (gfc_code *code, int nvar,
     }
 }
 
+static void
+gfc_resolve_do_concurrent_body(gfc_code* code, int nvar, gfc_expr **var_expr)
+{
+
+}
 
 /* Traverse the FORALL body to check whether the following errors exist:
    1. For assignment, check if a many-to-one assignment happens.
@@ -10923,6 +10928,12 @@ gfc_count_forall_iterators (gfc_code *code)
     }
 
   return current_iters + max_iters;
+}
+
+static void
+gfc_resolve_do_concurrent(gfc_code *code, gfc_namespace* ns, int do_concurrent_save, int offload_type)
+{
+
 }
 
 
@@ -12257,12 +12268,16 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 
       if (code->op == EXEC_FORALL)
 	{
+
+    printf("resolve.cc in forall resolve");
 	  forall_flag = 1;
 	  gfc_resolve_forall (code, ns, forall_save);
 	  forall_flag = 2;
 	}
       else if (code->block)
 	{
+
+    printf("resolve.cc in block resolve");
 	  omp_workshare_save = -1;
 	  switch (code->op)
 	    {

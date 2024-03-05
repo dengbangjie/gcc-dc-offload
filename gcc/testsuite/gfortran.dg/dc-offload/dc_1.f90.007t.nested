@@ -1,0 +1,112 @@
+
+;; Function dc_1
+
+
+
+__attribute__((fn spec (". ")))
+void dc_mul ()
+{
+  logical(kind=4) D.4329;
+  integer(kind=4) i;
+  real(kind=4) x[4];
+  real(kind=4) y[4];
+
+  try
+    {
+      {
+        integer(kind=4) i.0;
+
+        {
+          integer(kind=4) count.1;
+
+          i.0 = 1;
+          count.1 = 4;
+          <D.4328>:
+          _1 = count.1 <= 0;
+          D.4329 = .ANNOTATE (_1, 0, 0);
+          if (D.4329 != 0) goto L.2; else goto <D.4330>;
+          <D.4330>:
+          _2 = (integer(kind=8)) i.0;
+          _3 = _2 + -1;
+          _4 = x[_3];
+          _5 = (integer(kind=8)) i.0;
+          _6 = _5 + -1;
+          _7 = x[_6];
+          _8 = (integer(kind=8)) i.0;
+          _9 = _8 + -1;
+          _10 = _4 * _7;
+          y[_9] = _10;
+          L.1:
+          i.0 = i.0 + 1;
+          count.1 = count.1 + -1;
+          goto <D.4328>;
+          L.2:
+        }
+      }
+    }
+  finally
+    {
+      x = {CLOBBER(eos)};
+      y = {CLOBBER(eos)};
+    }
+}
+
+
+
+
+__attribute__((fn spec (". ")))
+void do_mul ()
+{
+  integer(kind=4) i;
+  real(kind=4) x[4];
+  real(kind=4) y[4];
+
+  try
+    {
+      i = 1;
+      <D.4326>:
+      {
+        logical(kind=4) D.4320;
+
+        D.4320 = i > 4;
+        if (D.4320 != 0) goto L.4; else goto <D.4327>;
+        <D.4327>:
+        _1 = (integer(kind=8)) i;
+        _2 = _1 + -1;
+        _3 = x[_2];
+        _4 = (integer(kind=8)) i;
+        _5 = _4 + -1;
+        _6 = x[_5];
+        _7 = (integer(kind=8)) i;
+        _8 = _7 + -1;
+        _9 = _3 * _6;
+        y[_8] = _9;
+        L.3:
+        i = i + 1;
+      }
+      goto <D.4326>;
+      L.4:
+    }
+  finally
+    {
+      x = {CLOBBER(eos)};
+      y = {CLOBBER(eos)};
+    }
+}
+
+
+
+
+__attribute__((fn spec (". ")))
+void dc_1 ()
+{
+  static void dc_mul (void);
+  static void do_mul (void);
+  struct FRAME.dc_1 FRAME.3;
+
+  FRAME.3.FRAME_BASE.PARENT = 0B;
+  do_mul (); [static-chain: &FRAME.3]
+  dc_mul (); [static-chain: &FRAME.3]
+}
+
+
