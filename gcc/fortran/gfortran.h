@@ -2843,6 +2843,7 @@ typedef struct
   bool openmp;
   bool openmp_target;
   bool openacc;
+  bool do_concurrent;
 }
 gfc_loop_annot;
 
