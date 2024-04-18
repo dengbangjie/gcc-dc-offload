@@ -281,6 +281,31 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 }
 
 
+/* Constraint helper function.  XVAL is a CONST_INT.  Return true if we
+   can perform XOR without a clobber reg, provided the operation is on
+   a d-register.  This means each byte is in { 0, 0xff, 0x80 }.  */
+
+bool
+avr_xor_noclobber_dconst (rtx xval, int n_bytes)
+{
+  machine_mode mode = GET_MODE (xval);
+
+  if (VOIDmode == mode)
+    mode = SImode;
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      if (val8 != 0 && val8 != 0xff && val8 != 0x80)
+	return false;
+    }
+
+  return true;
+}
+
+
 /* Access some RTX as INT_MODE.  If X is a CONST_FIXED we can get
    the bit representation of X by "casting" it to CONST_INT.  */
 
@@ -1470,12 +1495,18 @@ avr_set_current_function (tree decl)
   // Common problem is using "ISR" without first including avr/interrupt.h.
   const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
   name = default_strip_name_encoding (name);
-  if (strcmp ("ISR", name) == 0
-      || strcmp ("INTERRUPT", name) == 0
-      || strcmp ("SIGNAL", name) == 0)
+  if (strcmp ("ISR", name) == 0)
     {
       warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
 		  " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
+		  " before using the %qs macro", name, name);
+    }
+  if (strcmp ("INTERRUPT", name) == 0
+      || strcmp ("SIGNAL", name) == 0)
+    {
+      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a deprecated identifier"
+		  " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
+		  " or %<#include <compat/deprecated.h>%>"
 		  " before using the %qs macro", name, name);
     }
 #endif // AVR-LibC naming conventions
@@ -3901,11 +3932,20 @@ avr_print_operand (FILE *file, rtx x, int code)
     }
   else if (CONST_DOUBLE_P (x))
     {
-      long val;
-      if (GET_MODE (x) != SFmode)
+      if (GET_MODE (x) == SFmode)
+	{
+	  long val;
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
+	  fprintf (file, "0x%lx", val);
+	}
+      else if (GET_MODE (x) == DFmode)
+	{
+	  long l[2];
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), l);
+	  fprintf (file, "0x%lx%08lx", l[1] & 0xffffffff, l[0] & 0xffffffff);
+	}
+      else
 	fatal_insn ("internal compiler error.  Unknown mode:", x);
-      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
-      fprintf (file, "0x%lx", val);
     }
   else if (GET_CODE (x) == CONST_STRING)
     fputs (XSTR (x, 0), file);
@@ -12513,6 +12553,39 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case PLUS:
+      // uint16_t += 2 * uint8_t;
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && REG_P (XEXP (x, 1))
+	  && XEXP (XEXP (x, 0), 1) == const1_rtx
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (4);
+	  return true;
+	}
+
+      // *usum_widenqihi
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && REG_P (XEXP (x, 1)))
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+
       switch (mode)
 	{
 	case E_QImode:
@@ -12592,6 +12665,29 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case MINUS:
+      // *udiff_widenqihi
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      // *sub<mode>3_zero_extend1
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+      // *sub<mode>3.sign_extend2
+      if (REG_P (XEXP (x, 0))
+	  && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
+	{
+	  *total = COSTS_N_INSNS (2 + GET_MODE_SIZE (mode));
+	  return true;
+	}
+
       if (AVR_HAVE_MUL
 	  && QImode == mode
 	  && register_operand (XEXP (x, 0), QImode)
